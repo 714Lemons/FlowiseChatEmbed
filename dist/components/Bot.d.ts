@@ -34,7 +34,7 @@ export type MessageType = {
     fileUploads?: Partial<FileUpload>[];
 };
 type observerConfigType = (accessor: string | boolean | object | MessageType[]) => void;
-export type observersConfigType = Record<'observeUserInput' | 'observeLoading' | 'observeMessages', observerConfigType>;
+export type observersConfigType = Record<'observeUserInput' | 'observeLoading' | 'observeMessages' | 'observeToolCall', observerConfigType>;
 export type BotProps = {
     chatflowid: string;
     apiHost?: string;
