@@ -398,7 +398,7 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
     if (result.data) {
       const data = result.data;
       if (data.usedTools && data.usedTools.length > 0) {
-        setToolCall(data.usedTools[0]);
+        setToolCall(data.usedTools[data.usedTools.length - 1]);
       }
       // when there is a array in the data named usedTools and it is not empty
       const question = data.question;
