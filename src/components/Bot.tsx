@@ -392,7 +392,7 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
     }
 
     if (productTitle) {
-      value = value + '. Fronent Message: The user is looking at the product:' + productTitle ;
+      value = value + '. Fronent Message: The user is looking at the product:' + productTitle;
       if (sku) {
         value = value + ', sku: ' + sku;
       }
