@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Willkommen</title>
+</head>
+<body>
+    <flowise-fullchatbot></flowise-fullchatbot>
+    <script type="module">
+        import Chatbot from "/dist/web.js";
+        Chatbot.initFull({
+            chatflowid: "bf33360d-666e-4f01-a14b-91b26b85a9eb",
+            apiHost: "http://localhost:3000",
+        })
+    </script>
+</body>
+</html>

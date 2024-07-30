@@ -9,7 +9,7 @@ type Props = ButtonTheme & {
   dragAndDrop: boolean;
 };
 
-const defaultButtonColor = '#3B81F6';
+const defaultButtonColor = '#688dc3';
 const defaultIconColor = 'white';
 const defaultBottom = 20;
 const defaultRight = 20;

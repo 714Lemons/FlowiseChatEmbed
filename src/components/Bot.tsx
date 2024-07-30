@@ -73,7 +73,7 @@ export type MessageType = {
 };
 
 type observerConfigType = (accessor: string | boolean | object | MessageType[]) => void;
-export type observersConfigType = Record<'observeUserInput' | 'observeLoading' | 'observeMessages', observerConfigType>;
+export type observersConfigType = Record<'observeUserInput' | 'observeLoading' | 'observeMessages' | 'observeToolCall', observerConfigType>;
 
 export type BotProps = {
   chatflowid: string;
@@ -201,6 +201,7 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
   const [loading, setLoading] = createSignal(false);
   const [sourcePopupOpen, setSourcePopupOpen] = createSignal(false);
   const [sourcePopupSrc, setSourcePopupSrc] = createSignal({});
+  const [toolCall, setToolCall] = createSignal({});
   const [messages, setMessages] = createSignal<MessageType[]>(
     [
       {
@@ -237,7 +238,7 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
 
   onMount(() => {
     if (botProps?.observersConfig) {
-      const { observeUserInput, observeLoading, observeMessages } = botProps.observersConfig;
+      const { observeUserInput, observeLoading, observeMessages, observeToolCall } = botProps.observersConfig;
       typeof observeUserInput === 'function' &&
         // eslint-disable-next-line solid/reactivity
         createMemo(() => {
@@ -252,6 +253,11 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
         // eslint-disable-next-line solid/reactivity
         createMemo(() => {
           observeMessages(messages());
+        });
+      typeof observeToolCall === 'function' &&
+        // eslint-disable-next-line solid/reactivity
+        createMemo(() => {
+          observeToolCall(toolCall());
         });
     }
 
@@ -391,6 +397,10 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
 
     if (result.data) {
       const data = result.data;
+      if (data.usedTools && data.usedTools.length > 0) {
+        setToolCall(data.usedTools[0]);
+      }
+      // when there is a array in the data named usedTools and it is not empty
       const question = data.question;
       if (value === '' && question) {
         setMessages((data) => {
