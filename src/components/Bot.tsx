@@ -372,6 +372,34 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
       return messages;
     });
 
+    // get the url of the page where the chatbot is embedded
+    const pageUrl = window.location.href;
+    // if there is a char sequence with prd followed by a number in the pageurl, then the number is a sku
+    const match = pageUrl.match(/prd(\d+)/);
+    let sku = match ? match[1] : undefined;
+
+    // Extract the product title
+    const titleMatch = pageUrl.match(/([^/]+)-prd/);
+    let productTitle = titleMatch ? titleMatch[1].replace(/-/g, ' ') : undefined;
+
+    // if the sku is undefined, check if the url looks like this: http://localhost:4201/product/201807181
+    if (!sku && pageUrl.includes('product')) {
+      const match = pageUrl.match(/product\/(\d+)/);
+      sku = match ? match[1] : undefined;
+
+      // Safely get the text content of the product name element
+      productTitle = document.querySelector('ish-product-name')?.textContent ?? undefined;
+    }
+
+    if (productTitle) {
+      value = value + '. Fronent Message: The user is looking at the product:' + productTitle ;
+      if (sku) {
+        value = value + ', sku: ' + sku;
+      }
+    } else {
+      value = value + '. Fronent Message: The user is on the page: ' + pageUrl;
+    }
+
     const body: IncomingInput = {
       question: value,
       chatId: chatId(),
