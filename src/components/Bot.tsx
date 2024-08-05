@@ -58,7 +58,7 @@ export type IAgentReasoning = {
   sourceDocuments?: any[];
   instructions?: string;
   nextAgent?: string;
-}
+};
 
 export type FileUpload = Omit<FilePreview, 'preview'>;
 
@@ -280,10 +280,36 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
     setLocalStorageChatflow(props.chatflowid, chatId(), { chatHistory: allMessage });
   };
 
-  const updateLastMessage = (text: string, messageId: string, sourceDocuments: any = null, fileAnnotations: any = null, agentReasoning: IAgentReasoning[] = []) => {
+  const getSourceDocumentsFromReasoning = (agentReasoning: string | IAgentReasoning[], sourceDocuments: any[] = []): any[] => {
+    if (!Array.isArray(sourceDocuments)) {
+      sourceDocuments = [];
+    }
+
+    const parsedAgentReasoning: IAgentReasoning[] = typeof agentReasoning === 'string' ? JSON.parse(agentReasoning) : agentReasoning;
+
+    const reasoningArray = Array.isArray(parsedAgentReasoning) ? parsedAgentReasoning : [parsedAgentReasoning];
+
+    reasoningArray.forEach((reasoning) => {
+      const documents = reasoning?.sourceDocuments ?? [];
+      if (documents.length > 0 && documents[0]?.metadata) {
+        sourceDocuments.push(...documents);
+      }
+    });
+
+    return sourceDocuments;
+  };
+
+  const updateLastMessage = (
+    text: string,
+    messageId: string,
+    sourceDocuments: any = null,
+    fileAnnotations: any = null,
+    agentReasoning: IAgentReasoning[] = [],
+  ) => {
     setMessages((data) => {
       const updated = data.map((item, i) => {
         if (i === data.length - 1) {
+          sourceDocuments = getSourceDocumentsFromReasoning(agentReasoning, sourceDocuments);
           return { ...item, message: item.message + text, messageId, sourceDocuments, fileAnnotations, agentReasoning };
         }
         return item;
@@ -317,7 +343,7 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
       addChatMessage(updated);
       return [...updated];
     });
-  }
+  };
 
   const clearPreviews = () => {
     // Revoke the data uris to avoid memory leaks
@@ -550,6 +576,7 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
               if (message.fileAnnotations) chatHistory.fileAnnotations = message.fileAnnotations;
               if (message.fileUploads) chatHistory.fileUploads = message.fileUploads;
               if (message.agentReasoning) chatHistory.agentReasoning = message.agentReasoning;
+
               return chatHistory;
             })
           : [{ message: props.welcomeMessage ?? defaultWelcomeMessage, type: 'apiMessage' }];
@@ -610,7 +637,7 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
 
     socket.on('sourceDocuments', updateLastMessageSourceDocuments);
 
-    socket.on('agentReasoning', updateLastMessageAgentReasoning)
+    socket.on('agentReasoning', updateLastMessageAgentReasoning);
 
     socket.on('token', updateLastMessage);
 
@@ -1012,7 +1039,8 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
                       </div>
                     )}
                   </>
-                )}}
+                );
+              }}
             </For>
           </div>
           <Show when={messages().length === 1}>
