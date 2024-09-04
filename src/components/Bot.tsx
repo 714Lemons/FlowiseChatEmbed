@@ -398,19 +398,44 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
       return messages;
     });
 
-    // get the url of the page where the chatbot is embedded
+    // // get the url of the page where the chatbot is embedded
+    // const pageUrl = window.location.href;
+    // // if there is a char sequence with prd followed by a number in the pageurl, then the number is a sku
+    // const match = pageUrl.match(/prd(\d+)/);
+    // let sku = match ? match[1] : undefined;
+
+    // // Extract the product title
+    // const titleMatch = pageUrl.match(/([^/]+)-prd/);
+    // let productTitle = titleMatch ? titleMatch[1].replace(/-/g, ' ') : undefined;
+
+    // // if the sku is undefined, check if the url looks like this: http://localhost:4201/product/201807181
+    // if (!sku && pageUrl.includes('product')) {
+    //   const match = pageUrl.match(/product\/(\d+)/);
+    //   sku = match ? match[1] : undefined;
+
+    //   // Safely get the text content of the product name element
+    //   productTitle = document.querySelector('ish-product-name')?.textContent ?? undefined;
+    // }
+
+    // Get the URL of the page where the chatbot is embedded
     const pageUrl = window.location.href;
-    // if there is a char sequence with prd followed by a number in the pageurl, then the number is a sku
-    const match = pageUrl.match(/prd(\d+)/);
+
+    // Updated regex to match SKUs that include dashes and alphanumeric characters after 'prd'
+    const match = pageUrl.match(/prd([a-zA-Z0-9-]+)/);
     let sku = match ? match[1] : undefined;
+
+    // Remove any trailing '-ctg' and everything after it
+    if (sku) {
+      sku = sku.split('-ctg')[0];
+    }
 
     // Extract the product title
     const titleMatch = pageUrl.match(/([^/]+)-prd/);
     let productTitle = titleMatch ? titleMatch[1].replace(/-/g, ' ') : undefined;
 
-    // if the sku is undefined, check if the url looks like this: http://localhost:4201/product/201807181
+    // If the SKU is undefined, check if the URL looks like this: http://localhost:4201/product/201807181
     if (!sku && pageUrl.includes('product')) {
-      const match = pageUrl.match(/product\/(\d+)/);
+      const match = pageUrl.match(/product\/([a-zA-Z0-9-]+)/);
       sku = match ? match[1] : undefined;
 
       // Safely get the text content of the product name element
@@ -418,7 +443,7 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
     }
 
     if (productTitle) {
-      value = value + '. Fronent Message: The user is looking at the product:' + productTitle;
+      value = value + '. Fronent Message: The user is looking at the product detail page:' + productTitle;
       if (sku) {
         value = value + ', sku: ' + sku;
       }
@@ -433,7 +458,15 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
 
     if (urls && urls.length > 0) body.uploads = urls;
 
-    if (props.chatflowConfig) body.overrideConfig = props.chatflowConfig;
+    if (props.chatflowConfig) {
+      const prefix = 'icm_';
+    
+      if (props.chatflowConfig.vars) {
+        const user_token = localStorage.getItem(`${prefix}access_token`);
+        (props.chatflowConfig.vars as { user_token?: string | null }).user_token = user_token;
+      }
+      body.overrideConfig = props.chatflowConfig;
+    }
 
     if (leadEmail()) body.leadEmail = leadEmail();
 
